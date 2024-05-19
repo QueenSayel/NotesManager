@@ -156,9 +156,9 @@
       <button onclick="checkVariations()">Find</button>
       <div id="result"></div>
       <div class="confirmation-box" id="confirmationBox1"></div>
-      <button class="copy-button" onclick="copyConfirmationBox(1)">275</button>
+      <button id="button275" class="copy-button" onclick="copyConfirmationBox(1)">275</button>
       <div class="confirmation-box" id="confirmationBox2"></div>
-      <button class="copy-button" onclick="copyConfirmationBox(2)">283</button>
+      <button id="button283" class="copy-button" onclick="copyConfirmationBox(2)">283</button>
     </div>
     <div class="database-container">
       <h1>Notes</h1>
@@ -555,84 +555,139 @@ function wipeDatabase() {
 	addNameAndVariations("Abdul", ["Abdul", "Abdoul", "Abdool", "Abdull", "Abdoul", "Abdou", "Abdullah", "Abdulla", "Abdellah", "Abdallah", "Abdoulla"]);
 	addNameAndVariations("Rashid", ["Rashid", "Rasheed", "Rashad", "Rashod", "Rachid", "Rasheed"]);
 	addNameAndVariations("Faisal", ["Faisal", "Fayçal", "Faysal", "Faycal", "Fasal", "Faizal", "Fayzel", "Faizel"]);
+	addNameAndVariations("David", ["Dave", "Davey"]);
 
-    // Function to check variations
-    function checkVariations() {
-      console.log("checkVariations() called");
-	  // Get input value
-      const inputName = document.getElementById('inputName').value.trim();
+// Function to capitalize the first letter of a word
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+}
 
-      // Sample database entries
-      const database = [
-        { name: "Mohammed Hassan", value: 100 },
-        { name: "Mohammad Hassan", value: 1000 },
-        { name: "Mohamed Hassan", value: 19800 },
-		{ name: "Muhammad Mustafa", value: 2600 },
-		{ name: "Muhammad Ali", value: 40100 },
-		{ name: "Said Hassan", value: 500 },
-		{ name: "Ahmed Hassan", value: 20000 },
-        // Add more database entries as needed
-      ];
+// Function to format input name
+function formatInputName(inputName) {
+  return inputName
+    .split(" ")
+    .map(word => capitalizeFirstLetter(word))
+    .join(" ");
+}
 
-      // Split input name into first and last name
-      const inputNames = inputName.split(" ");
-      const firstName = inputNames[0];
-      const lastName = inputNames.slice(1).join(" ");
+function checkVariations() {
+  console.log("checkVariations() called");
+  // Get input value
+  let inputName = document.getElementById('inputName').value.trim();
+  inputName = formatInputName(inputName); // Format the input name
 
-      // Initialize variables to store the highest value and corresponding variation
-      let highestValue = -1;
-      let highestVariation = "";
+  // Sample database entries
+  const database = [
+    { name: "Mohammed Hassan", value: 100 },
+    { name: "Mohammad Hassan", value: 1000 },
+    { name: "Mohamed Hassan", value: 19800 },
+    { name: "Muhammad Mustafa", value: 2600 },
+    { name: "Muhammad Ali", value: 40100 },
+    { name: "Said Hassan", value: 500 },
+    { name: "Ahmed Hassan", value: 20000 },
+    { name: "David Campbell", value: 4400 },
+	{ name: "Martha Smith", value: 1200 },
+    // Add more database entries as needed
+  ];
 
-      // Check if the first name is a variation
-      let originalFirstName = firstName;
-      if (firstName in variationsMapping) {
-        originalFirstName = variationsMapping[firstName][0]; // Get the original first name from variationsMapping
-      }
+  // Split input name into first and last name
+  const inputNames = inputName.split(" ");
+  const firstName = inputNames[0];
+  const lastName = inputNames.slice(1).join(" ");
 
-      // Construct variations of the full name
-      const variationsOfFullName = variationsMapping[originalFirstName].map(variation => `${variation} ${lastName}`);
+  // Initialize variables to store the highest value and corresponding variation
+  let highestValue = -1;
+  let highestVariation = "";
 
-      // Check if any variation of the full name matches any entry in the database
-	  variationsOfFullName.forEach(fullName => {
-		const matchingEntry = database.find(entry => entry.name.toLowerCase() === fullName.toLowerCase());
-        if (matchingEntry && matchingEntry.value > highestValue) {
-			highestValue = matchingEntry.value;
-			highestVariation = fullName; // Store the highest scoring variation
-        }
-      });
+  // Check if the first name is a variation
+  let originalFirstName = firstName;
+  if (firstName in variationsMapping) {
+    originalFirstName = variationsMapping[firstName][0]; // Get the original first name from variationsMapping
+  }
 
-      // Display the result
-      const resultElement = document.getElementById('result');
-      if (highestVariation) {
-        resultElement.innerHTML = `<p>Variation with the highest value: ${highestVariation}</p>`;
-         resultElement.innerHTML += `<p>Profiles: ${highestValue}</p>`;
-        const [highestFirstName, highestLastName] = highestVariation.split(" ");
-        resultElement.innerHTML += `<p><a href="https://www.linkedin.com/pub/dir/${highestFirstName}/${highestLastName}" target="_blank">LinkedIn</a> | <a href="https://www.google.com/search?q=%22${encodeURIComponent(highestVariation)}%22+LinkedIn" target="_blank">Google</a></p>`;
+  // Construct variations of the full name
+  let variationsOfFullName = [];
+  if (variationsMapping[originalFirstName]) {
+    variationsOfFullName = variationsMapping[originalFirstName].map(variation => `${variation} ${lastName}`);
+  }
 
-        // Populate confirmation boxes
-		const confirmationBox1 = document.getElementById('confirmationBox1');
-		confirmationBox1.innerHTML = `OK to process as per guidance 275<br>${highestValue}+ profiles for "${highestVariation}" ${getLinkedInLink(highestFirstName, highestLastName)}`;
-
-		const confirmationBox2 = document.getElementById('confirmationBox2');
-		if (highestValue > 2000) {
-			confirmationBox2.innerHTML = `OK to process as per guidance 283<br>${highestValue}+ profiles for "${highestVariation}" ${getLinkedInLink(highestFirstName, highestLastName)}`;
-		} else {
-		  confirmationBox2.innerHTML = `283 NOT APPLICABLE`;
-		}
+  let variationsOfFullNameReversed = [];
+if (variationsMapping[lastName]) {
+    variationsOfFullNameReversed = variationsMapping[lastName].map(variation => `${firstName} ${variation}`);
+}
 
 
-        // Show confirmation boxes
-        confirmationBox1.style.display = "block";
-        confirmationBox2.style.display = "block";
-		// Show copy buttons
-		document.querySelectorAll('.copy-button').forEach(button => {
-		button.style.display = 'inline-block';
-		
-});
-      } else {
-        resultElement.innerHTML = "<p>No matching variation found in the database.</p>";
-      }
+  // Combine both sets of variations
+  const allVariationsOfFullName = [inputName, ...variationsOfFullName, ...variationsOfFullNameReversed];
+ 
+
+ 
+// Generate variations for the reversed input name
+let variationsOfReversedFullName = [];
+let variationsOfReversedFullNameReversed = [];
+if (variationsMapping[lastName]) {
+    variationsOfReversedFullName = variationsMapping[lastName].map(variation => `${variation} ${firstName}`);
+}
+if (variationsMapping[firstName]) {
+    variationsOfReversedFullNameReversed = variationsMapping[firstName].map(variation => `${variation} ${lastName}`);
+}
+const allVariationsOfReversedFullName = [`${lastName} ${firstName}`, ...variationsOfReversedFullName, ...variationsOfReversedFullNameReversed];
+
+  // Check if any variation of the full name matches any entry in the database
+  const allVariations = [...allVariationsOfFullName, ...allVariationsOfReversedFullName];
+  allVariations.forEach(fullName => {
+    const matchingEntry = database.find(entry => entry.name.toLowerCase() === fullName.toLowerCase());
+    if (matchingEntry && matchingEntry.value > highestValue) {
+      highestValue = matchingEntry.value;
+      highestVariation = fullName; // Store the highest scoring variation
     }
+  });
+
+  // Display the result
+  const resultElement = document.getElementById('result');
+  console.log("Highest variation:", highestVariation);
+  if (highestVariation) {
+    resultElement.innerHTML = `<p>Variation with the highest value: ${highestVariation}</p>`;
+    resultElement.innerHTML += `<p>Profiles: ${highestValue}</p>`;
+    const [highestFirstName, highestLastName] = highestVariation.split(" ");
+    resultElement.innerHTML += `<p><a href="https://www.linkedin.com/pub/dir/${highestFirstName}/${highestLastName}" target="_blank">LinkedIn</a> | <a href="https://www.google.com/search?q=%22${encodeURIComponent(highestVariation)}%22+LinkedIn" target="_blank">Google</a></p>`;
+
+    // Populate confirmation boxes
+    const confirmationBox1 = document.getElementById('confirmationBox1');
+    confirmationBox1.innerHTML = `OK to process as per guidance 275<br>${highestValue}+ profiles for "${highestVariation}" ${getLinkedInLink(highestFirstName, highestLastName)}`;
+
+    const confirmationBox2 = document.getElementById('confirmationBox2');
+    if (highestValue > 2000) {
+      confirmationBox2.innerHTML = `OK to process as per guidance 283<br>${highestValue}+ profiles for "${highestVariation}" ${getLinkedInLink(highestFirstName, highestLastName)}`;
+    } else {
+      confirmationBox2.innerHTML = `283 NOT APPLICABLE`;
+    }
+
+
+    // Show confirmation boxes
+    confirmationBox1.style.display = "block";
+    confirmationBox2.style.display = "block";
+    // Show copy buttons
+    document.querySelectorAll('.copy-button').forEach(button => {
+      button.style.display = 'inline-block';
+
+    });
+  } else {
+    resultElement.innerHTML = "<p>No matching variation found in the database.</p>";
+	// Hide confirmation boxes when no matches are found
+	const confirmationBox1 = document.getElementById('confirmationBox1');
+	const confirmationBox2 = document.getElementById('confirmationBox2');
+	confirmationBox1.style.display = "none";
+	confirmationBox2.style.display = "none";
+	// Hide buttons 275 and 283
+	const button275 = document.getElementById('button275');
+	const button283 = document.getElementById('button283');
+	button275.style.display = "none";
+	button283.style.display = "none";
+  }
+}
+
+
 
     // Function to generate LinkedIn link
 	function getLinkedInLink(firstName, lastName) {
